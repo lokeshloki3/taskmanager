@@ -1,9 +1,11 @@
 import { BiTask } from "react-icons/bi";
 import { FcGoogle } from "react-icons/fc";
 import { signInWithPopup } from "firebase/auth";
-import { auth, provider } from "../components/firebaseConfig"
+import { auth, provider } from "../components/firebaseConfig";
+import mainimg from "../assets/mainimg.png"
 
 const Home = () => {
+    console.log(mainimg)
 
     const handleClick = () => {
         signInWithPopup(auth, provider).then(async (data) => {
@@ -15,7 +17,7 @@ const Home = () => {
     }
 
     return (
-        <div>
+        <div className="flex justify-around">
             <div className="flex flex-col justify-center items-center h-screen gap-4">
                 <div className="flex gap-4 font-extrabold ml-0">
                     <BiTask style={{ color: '#C191C2' }} className="text-6xl"/>
@@ -26,6 +28,7 @@ const Home = () => {
                     <button className="text-white flex gap-2 items-center" onClick={handleClick}> <FcGoogle /> Continue with Google</button>
                 </div>
             </div>
+            <img src={mainimg} alt="main image" className=" max-w-[600px] w-full h-auto"/>
         </div>
     )
 }

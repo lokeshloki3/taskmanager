@@ -39,6 +39,17 @@ const Dashboard = () => {
       ) : (
         <p>Loading...</p>
       )}
+      <div>
+        <div>
+          <span>
+            <input type="checkbox" />
+            Learn
+          </span>
+        </div>
+        <button>Edit</button>
+        <br/>
+        <button>Delete</button>
+      </div>
     </div>
   )
 }
