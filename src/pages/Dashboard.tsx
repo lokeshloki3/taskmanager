@@ -1,8 +1,25 @@
 import { useEffect, useState } from "react";
 import { auth } from "../components/firebaseConfig";
+import { db } from "../components/firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
 
 const Dashboard = () => {
   const [userDetails, setUserDetails] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const collectionRef = collection(db, "tasks");
+
+  useEffect(() => {
+    const getTasks = async () => {
+      await getDocs(collectionRef).then((task) => {
+        let tasksData = task.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+        setTasks(tasksData);
+      })
+    }
+    getTasks();
+  }, [])
+
+  console.log("tasks", tasks);
+
   const fetchUserData = async () => {
     auth.onAuthStateChanged(async (user) => {
       console.log(user);
@@ -14,6 +31,7 @@ const Dashboard = () => {
   useEffect(() => {
     fetchUserData();
   }, []);
+
 
   async function handleLogout() {
     try {
@@ -39,17 +57,21 @@ const Dashboard = () => {
       ) : (
         <p>Loading...</p>
       )}
-      <div>
+
+      {tasks.map(({ task, id }) => 
+      <div key={id}>
         <div>
           <span>
             <input type="checkbox" />
-            Learn
+            {task}
           </span>
         </div>
         <button>Edit</button>
-        <br/>
+        <br />
         <button>Delete</button>
       </div>
+      )}
+
     </div>
   )
 }
