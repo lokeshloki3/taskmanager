@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
 import { auth } from "../components/firebaseConfig";
 import { db } from "../components/firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { addDoc, collection, getDocs } from "firebase/firestore";
 
 const Dashboard = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [tasks, setTasks] = useState([]);
   const collectionRef = collection(db, "tasks");
+  const [createTask, setCreateTask] = useState('');
 
   useEffect(() => {
     const getTasks = async () => {
       await getDocs(collectionRef).then((task) => {
         let tasksData = task.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
         setTasks(tasksData);
+      }).catch((err) => {
+        console.log(err);
       })
     }
     getTasks();
@@ -43,6 +46,19 @@ const Dashboard = () => {
     }
   }
 
+  const submitTask = async (e) => {
+    e.preventDefault();
+    try {
+      await addDoc(collectionRef, {
+        task: createTask,
+        isChecked: false
+      })
+      window.location.reload()
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <div>
       {userDetails ? (
@@ -58,20 +74,24 @@ const Dashboard = () => {
         <p>Loading...</p>
       )}
 
-      {tasks.map(({ task, id }) => 
-      <div key={id}>
-        <div>
-          <span>
-            <input type="checkbox" />
-            {task}
-          </span>
+      {tasks.map(({ task, id }) =>
+        <div key={id}>
+          <div>
+            <span>
+              <input type="checkbox" />
+              {task}
+            </span>
+          </div>
+          <button>Edit</button>
+          <br />
+          <button>Delete</button>
         </div>
-        <button>Edit</button>
-        <br />
-        <button>Delete</button>
-      </div>
       )}
 
+      <form onSubmit={submitTask}>
+        <input type="text" onChange={e => setCreateTask(e.target.value)} />
+        <button type="submit">Add Task</button>
+      </form>
     </div>
   )
 }
