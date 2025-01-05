@@ -17,7 +17,7 @@ const Home = () => {
     }
 
     return (
-        <div className="flex justify-around">
+        <div className="flex justify-around" style={{backgroundColor: "#FFF9F9"}}>
             <div className="flex flex-col justify-center items-center h-screen gap-4">
                 <div className="flex gap-4 font-extrabold ml-0">
                     <BiTask style={{ color: '#C191C2' }} className="text-6xl"/>
