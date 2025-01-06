@@ -11,7 +11,7 @@ const Home = () => {
         signInWithPopup(auth, provider).then(async (data) => {
             console.log(data);
             if (data.user) {
-                window.location.href = "/dashboard";
+                window.location.href = "/profile";
             }
         })
     }
