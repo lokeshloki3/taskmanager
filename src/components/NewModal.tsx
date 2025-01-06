@@ -28,20 +28,47 @@ const NewModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white rounded-xl shadow-lg pb-3 pt-3 pr-6 pl-6 max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-2 text-center text-gray-800">Add Task</h2>
+      <div className="bg-white rounded-xl shadow-lg pb-3 pt-3 pr-6 pl-6 max-w-xl w-full">
+        <h2 className="text-2xl font-bold mb-2 text-center text-gray-800 border-b-2">Create Task</h2>
         <form onSubmit={submitTask}>
 
           <div className="mb-2">
-            <label className="block text-gray-600">Task</label>
+            {/* <label className="block text-gray-600">Task</label> */}
             <input
               type="text"
               value={createTask}
               onChange={(e) => setCreateTask(e.target.value)}
               required
               className="border border-gray-300 p-2 w-full rounded"
-              placeholder="Enter task"
+              placeholder="Task title"
             />
+            <textarea name="dshgdsh" id=""></textarea>
+            <div className='flex justify-between'>
+              <div className='flex flex-col'>
+                <p>Task Category*</p>
+                <div className='flex gap-2'>
+                  <p className='border border-black p-1 rounded-xl'>Work</p>
+                  <p className='border border-black p-1 rounded-xl'>Professional</p>
+                </div>
+              </div>
+
+              <div>
+                <p>Due on*</p>
+                <input type="date" />
+              </div>
+
+              <div>
+                <p>Task Status*</p>
+                <select>
+                  <option value="" disabled selected>Choose</option>
+                  <option value="todo">Todo</option>
+                  <option value="inprogress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+
+              </div>
+            </div>
+
           </div>
 
           <div className="flex justify-between mt-3">
