@@ -107,9 +107,9 @@ const Profile = () => {
               </button>
             </div>
           </div>
-          <div>
+          {/* <div>
             <p>Email: {userDetails.email}</p>
-          </div>
+          </div> */}
         </>
       ) : (
         <p>Loading...</p>

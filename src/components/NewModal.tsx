@@ -146,8 +146,8 @@ const NewModal = ({ isOpen, onClose, onTaskAdded }) => {
 
             <button
               type="submit"
-              className="text-[#FFFFFF] px-6 py-2 rounded-3xl text-sm font-semibold"
-              style={{ backgroundColor: '#CBABCE' }}
+              className="text-white px-6 py-2 rounded-3xl text-sm font-semibold"
+              style={{ backgroundColor: '#7B1A84' }}
             >
               CREATE
             </button>
