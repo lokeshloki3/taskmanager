@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { auth } from "../components/firebaseConfig";
 import { db } from "../components/firebaseConfig";
 import { addDoc, collection, deleteDoc, doc, getDocs } from "firebase/firestore";
+import EditTask from "../components/EditTask";
 
 const Dashboard = () => {
   const [userDetails, setUserDetails] = useState(null);
@@ -94,14 +95,13 @@ const Dashboard = () => {
               {task}
             </span>
           </div>
-          <button>Edit</button>
-          <br />
+          <EditTask task={task} id={id}/>
           <button onClick={() => deleteTask(id)}>Delete</button>
         </div>
       )}
 
       <form onSubmit={submitTask}>
-        <input type="text" onChange={e => setCreateTask(e.target.value)} />
+        <input type="text" placeholder="please add task" onChange={e => setCreateTask(e.target.value)} />
         <button type="submit">Add Task</button>
       </form>
     </div>
