@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { auth } from "../components/firebaseConfig";
 import { db } from "../components/firebaseConfig";
-import { addDoc, collection, getDocs } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDocs } from "firebase/firestore";
 
 const Dashboard = () => {
   const [userDetails, setUserDetails] = useState(null);
@@ -59,6 +59,18 @@ const Dashboard = () => {
     }
   }
 
+  const deleteTask = async (id) => {
+    try {
+      window.confirm("Are you sure delete ?");
+      // console.log(id);
+      const documentRef = doc(db, "tasks", id);
+      await deleteDoc(documentRef);
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <div>
       {userDetails ? (
@@ -84,7 +96,7 @@ const Dashboard = () => {
           </div>
           <button>Edit</button>
           <br />
-          <button>Delete</button>
+          <button onClick={() => deleteTask(id)}>Delete</button>
         </div>
       )}
 
