@@ -1,71 +1,117 @@
 import React, { useState } from 'react';
 import { addDoc, collection } from "firebase/firestore";
-import { db } from "./firebaseConfig";
+import { auth, db } from "./firebaseConfig";
 
-const NewModal = ({ isOpen, onClose }) => {
-  const [createTask, setCreateTask] = useState('');
-  const collectionRef = collection(db, "tasks");
+const NewModal = ({ isOpen, onClose, onTaskAdded }) => {
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskDesc, setTaskDesc] = useState('');
+  const [category, setCategory] = useState('work');
+  const [dueDate, setDueDate] = useState('');
+  const [status, setStatus] = useState('');
+
+  if (!isOpen) return null;
 
   const submitTask = async (e) => {
     e.preventDefault();
+    const user = auth.currentUser;
+    if (!taskTitle || !dueDate || !status) {
+      alert("Please fill all required fields.");
+      return;
+    }
+
     try {
-      await addDoc(collectionRef, {
-        task: createTask,
+      const displayName = user.displayName || "default";
+      const tasksRef = collection(db, "tasks", user.uid, displayName);
+      await addDoc(tasksRef, {
+        task: taskTitle,
+        desc: taskDesc,
+        category,
+        dueDate: new Date(dueDate),
         isChecked: false,
+        status,
+        createdAt: new Date(),
       });
+
+      onTaskAdded();
       onClose();
-      window.location.reload();
     } catch (error) {
       console.log("Error adding task:", error);
     }
   };
 
   const handleReset = () => {
-    setCreateTask('');
+    setTaskTitle('');
+    setTaskDesc('');
+    setCategory('work');
+    setDueDate('');
+    setStatus('');
   };
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white rounded-xl shadow-lg pb-3 pt-3 pr-6 pl-6 max-w-xl w-full">
         <h2 className="text-2xl font-bold mb-2 text-center text-gray-800 border-b-2">Create Task</h2>
         <form onSubmit={submitTask}>
-
           <div className="mb-2">
-            {/* <label className="block text-gray-600">Task</label> */}
             <input
               type="text"
-              value={createTask}
-              onChange={(e) => setCreateTask(e.target.value)}
+              value={taskTitle}
+              onChange={(e) => setTaskTitle(e.target.value)}
               required
               className="border border-gray-300 p-2 w-full rounded"
               placeholder="Task title"
             />
-            <textarea name="dshgdsh" id=""></textarea>
-            <div className='flex justify-between'>
+            <textarea
+              value={taskDesc}
+              onChange={(e) => setTaskDesc(e.target.value)}
+              placeholder="Task description"
+              className="border border-gray-300 p-2 w-full rounded mt-2"
+            />
+            <div className='flex justify-between mt-3'>
               <div className='flex flex-col'>
                 <p>Task Category*</p>
                 <div className='flex gap-2'>
-                  <p className='border border-black p-1 rounded-xl'>Work</p>
-                  <p className='border border-black p-1 rounded-xl'>Professional</p>
+                  <button
+                    type='button'
+                    onClick={() => setCategory('work')}
+                    className={`border border-black p-1 rounded-xl ${category === 'work' ? 'bg-blue-500 text-white' : ''}`}
+                  >
+                    Work
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => setCategory('professional')}
+                    className={`border border-black p-1 rounded-xl ${category === 'professional' ? 'bg-blue-500 text-white' : ''}`}
+                  >
+                    Professional
+                  </button>
                 </div>
               </div>
 
               <div>
                 <p>Due on*</p>
-                <input type="date" />
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  required
+                  className="border border-gray-300 p-2 rounded"
+                />
               </div>
 
               <div>
                 <p>Task Status*</p>
-                <select>
-                  <option value="" disabled selected>Choose</option>
-                  <option value="todo">Todo</option>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  required
+                  className="border border-gray-300 p-2 rounded"
+                >
+                  <option value="" disabled>Choose</option>
+                  <option value="todo">To Do</option>
                   <option value="inprogress">In Progress</option>
                   <option value="completed">Completed</option>
                 </select>
-
               </div>
             </div>
 

@@ -1,105 +1,78 @@
 import { useEffect, useState } from "react";
-import { auth } from "../components/firebaseConfig";
-import { db } from "../components/firebaseConfig";
+import { auth, db } from "../components/firebaseConfig";
 import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
 import { BiTask, BiLogOut } from "react-icons/bi";
-import NewModal from "../components/newModal";
+import NewModal from "../components/NewModal";
 import EditTaskModal from "../components/EditTaskModal";
 
 const Profile = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [tasks, setTasks] = useState([]);
-  const collectionRef = collection(db, "tasks");
   const [showModal, setShowModal] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
 
   useEffect(() => {
-    const getTasks = async () => {
-      await getDocs(collectionRef).then((task) => {
-        let tasksData = task.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-        setTasks(tasksData);
-      }).catch((err) => {
-        console.log(err);
-      })
-    }
-    getTasks();
-  }, [])
-
-  // console.log("tasks", tasks);
-
-  const fetchUserData = async () => {
-    auth.onAuthStateChanged(async (user) => {
-      // console.log(user);
-      // console.log(user?.photoURL);
-      setUserDetails(user);
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUserDetails(user);
+        getUserTasks(user);
+      }
     });
-  }
 
-  useEffect(() => {
-    fetchUserData();
+    return () => unsubscribe(); // Clean up subscription
   }, []);
 
+  const getUserTasks = async (user) => {
+    if (user) {
+      const displayName = user.displayName || 'default';
+      const tasksRef = collection(db, "tasks", user.uid, displayName);
+      const taskSnapshot = await getDocs(tasksRef);
+      const taskList = taskSnapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      setTasks(taskList);
+    }
+  };
 
-  async function handleLogout() {
+  const handleLogout = async () => {
     try {
       await auth.signOut();
       window.location.href = "/";
-      console.log("User logout");
     } catch (error) {
-      console.log("error in logging out", error.message);
+      console.log("Error in logging out:", error.message);
     }
-  }
+  };
 
-  // const submitTask = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     await addDoc(collectionRef, {
-  //       task: createTask,
-  //       isChecked: false
-  //     })
-  //     window.location.reload()
-  //   } catch (error) {
-  //     console.log(error)
-  //   }
-  // }
+  const onTaskEditAdded = () => {
+    if (auth.currentUser) {
+      getUserTasks(auth.currentUser);
+    }
+  };
 
   const deleteTask = async (id) => {
     const isConfirmed = window.confirm("Are you sure you want to delete this task?");
-
     if (isConfirmed) {
       try {
-        const documentRef = doc(db, "tasks", id);
-        await deleteDoc(documentRef);
-        setTasks(tasks.filter(task => task.id !== id));
+        const user = auth.currentUser;
+        const displayName = user.displayName || 'default';
+        const taskDocRef = doc(db, "tasks", user.uid, displayName, id);
+        await deleteDoc(taskDocRef);
+        setTasks(tasks.filter((task) => task.id !== id));
       } catch (error) {
         console.log(error);
       }
     }
   };
 
-  const openModal = () => {
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-  };
-
-  const openEditModal = (task, id) => {
-    setTaskToEdit({ task, id });
+  const openModal = () => setShowModal(true);
+  const closeModal = () => setShowModal(false);
+  const openEditModal = (task) => {
+    setTaskToEdit(task);
     setEditModalOpen(true);
   };
-
-  const closeEditModal = () => {
-    setEditModalOpen(false);
-    setTaskToEdit(null);
-  };
-
-  const onEdit = () => {
-    setEditModalOpen(false);
-    window.location.reload();
-  };
+  const closeEditModal = () => setEditModalOpen(false);
 
   return (
     <div>
@@ -111,18 +84,25 @@ const Profile = () => {
                 <BiTask />
                 <p>TaskBuddy</p>
               </div>
-
             </div>
             <div className="flex flex-col gap-2 items-center">
               <div className="flex justify-center items-center gap-2">
                 <img src={userDetails.photoURL} className="rounded-full w-16 h-auto" />
                 <h3>{userDetails.displayName}</h3>
               </div>
-              <div className="flex justify-center items-center text-sm p-2 gap-1 rounded-lg w-24 cursor-pointer border border-red-200" onClick={handleLogout} style={{ backgroundColor: "#F8F3F3" }}>
+              <div
+                className="flex justify-center items-center text-sm p-2 gap-1 rounded-lg w-24 cursor-pointer border border-red-200"
+                onClick={handleLogout}
+                style={{ backgroundColor: "#F8F3F3" }}
+              >
                 <BiLogOut />
                 <p>Logout</p>
               </div>
-              <button onClick={openModal} className="text-white px-10 py-2 rounded-3xl" style={{ backgroundColor: "#7B1A84" }}>
+              <button
+                onClick={openModal}
+                className="text-white px-10 py-2 rounded-3xl"
+                style={{ backgroundColor: "#7B1A84" }}
+              >
                 Add Task
               </button>
             </div>
@@ -130,7 +110,6 @@ const Profile = () => {
           <div>
             <p>Email: {userDetails.email}</p>
           </div>
-
         </>
       ) : (
         <p>Loading...</p>
@@ -140,30 +119,46 @@ const Profile = () => {
         <thead>
           <tr>
             <th className="border px-4 py-2">Task</th>
+            <th className="border px-4 py-2">Category</th>
+            <th className="border px-4 py-2">Due Date</th>
+            <th className="border px-4 py-2">Status</th>
             <th className="border px-4 py-2">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {tasks.map(({ task, id }) => (
-            <tr key={id}>
+          {tasks.map((task) => (
+            <tr key={task.id}>
               <td className="border px-4 py-2">
-                <span>
-                  <input type="checkbox" />
-                  {task}
+                <input type="checkbox" />
+                {task.task}
+              </td>
+              <td className="border px-4 py-2">{task.category}</td>
+              <td className="border px-4 py-2">
+                {task.dueDate?.seconds
+                  ? new Date(task.dueDate.seconds * 1000).toLocaleDateString()
+                  : "No Due Date"}
+              </td>
+              <td className="border px-4 py-2">
+                <span
+                  className={`px-2 py-1 rounded-full ${task.status === "todo"
+                    ? "bg-yellow-300"
+                    : task.status === "inprogress"
+                      ? "bg-blue-300"
+                      : "bg-green-300"
+                    }`}
+                >
+                  {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
                 </span>
               </td>
               <td className="border px-4 py-2">
-                {/* Edit button */}
                 <button
-                  onClick={() => openEditModal(task, id)}
+                  onClick={() => openEditModal(task)}
                   className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
                 >
                   Edit
                 </button>
-
-                {/* Delete button */}
                 <button
-                  onClick={() => deleteTask(id)}
+                  onClick={() => deleteTask(task.id)}
                   className="bg-red-500 text-white px-4 py-2 rounded"
                 >
                   Delete
@@ -174,30 +169,18 @@ const Profile = () => {
         </tbody>
       </table>
 
-
-      {/* <form onSubmit={submitTask}>
-        <input type="text" placeholder="please add task" onChange={e => setCreateTask(e.target.value)} />
-        <button type="submit">Add Task</button>
-      </form> */}
-
-      {showModal && (
-        <NewModal
-          isOpen={showModal}
-          onClose={closeModal}
-        />
-      )}
-
+      {showModal && <NewModal isOpen={showModal} onClose={closeModal} onTaskAdded={onTaskEditAdded} />}
       {editModalOpen && taskToEdit && (
         <EditTaskModal
           isOpen={editModalOpen}
           onClose={closeEditModal}
           taskId={taskToEdit.id}
-          initialTask={taskToEdit.task}
-          onEdit={onEdit}
+          initialTaskData={taskToEdit}
+          onEdit={onTaskEditAdded}
         />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Profile
+export default Profile;
