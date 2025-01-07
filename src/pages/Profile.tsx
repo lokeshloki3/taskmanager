@@ -4,7 +4,6 @@ import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
 import NewModal from "../components/NewModal";
 import EditTaskModal from "../components/EditTaskModal";
 import UserProfile from "../components/UserProfile";
-import TaskTable from "../components/TaskTable";
 
 const Profile = () => {
   const [userDetails, setUserDetails] = useState(null);
@@ -192,14 +191,14 @@ const Profile = () => {
             handleLogout={handleLogout}
             openModal={openModal}
             handleDateFilter={handleDateFilter}
-          />
-          <TaskTable
             tasks={tasks}
             filteredTasks={filteredTasks}
             sortOrder={sortOrder}
             handleSortByDate={handleSortByDate}
             renderTaskRows={renderTaskRows}
             countTasksByStatus={countTasksByStatus}
+            openEditModal={openEditModal}
+            deleteTask={deleteTask}
           />
         </>
       ) : (
