@@ -154,7 +154,9 @@ const Profile = () => {
               checked={task.isChecked}
               onChange={() => handleCheckboxChange(task.id)}
             />
-            <div>{task.task}</div>
+            <div className={`${task.status === "completed" ? "line-through text-gray-500" : ""}`}>
+              {task.task}
+            </div>
           </div>
         </td>
         <td className="border px-4 py-2 text-center">
