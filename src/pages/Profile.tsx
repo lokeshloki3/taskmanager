@@ -15,6 +15,7 @@ const Profile = () => {
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -49,9 +50,14 @@ const Profile = () => {
         return false;
       });
     }
+    if (searchQuery) {
+      filtered = filtered.filter((task) =>
+        task.task.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
 
     setFilteredTasks(filtered);
-  }, [tasks, categoryFilter, dateFilter]);
+  }, [tasks, categoryFilter, dateFilter, searchQuery]);
 
   const getUserTasks = async (user) => {
     if (user) {
@@ -199,6 +205,8 @@ const Profile = () => {
             countTasksByStatus={countTasksByStatus}
             openEditModal={openEditModal}
             deleteTask={deleteTask}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
           />
         </>
       ) : (

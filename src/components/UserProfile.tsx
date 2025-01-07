@@ -3,7 +3,7 @@ import { useState } from "react";
 import TaskTable from './TaskTable';
 import TaskBoard from './TaskBoard';
 
-const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, handleDateFilter, tasks, filteredTasks, sortOrder, handleSortByDate, renderTaskRows, countTasksByStatus, openEditModal, deleteTask }) => {
+const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, handleDateFilter, tasks, filteredTasks, sortOrder, handleSortByDate, renderTaskRows, countTasksByStatus, openEditModal, deleteTask, searchQuery, setSearchQuery }) => {
     const [view, setView] = useState('list');
 
     return (
@@ -67,13 +67,22 @@ const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, 
                         <BiLogOut />
                         <p>Logout</p>
                     </div>
-                    <button
-                        onClick={openModal}
-                        className="text-white px-10 py-2 rounded-3xl"
-                        style={{ backgroundColor: "#7B1A84" }}
-                    >
-                        Add Task
-                    </button>
+                    <div className="flex gap-6 mb-4 mt-4">
+                        <input
+                            type="text"
+                            className="p-2 border rounded-lg w-1/3"
+                            placeholder="Search Tasks"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <button
+                            onClick={openModal}
+                            className="text-white px-10 py-2 rounded-3xl"
+                            style={{ backgroundColor: "#7B1A84" }}
+                        >
+                            Add Task
+                        </button>
+                    </div>
                 </div>
             </div>
             <div>
