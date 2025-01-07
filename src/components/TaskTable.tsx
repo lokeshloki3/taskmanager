@@ -32,7 +32,7 @@ const TaskTable = ({ tasks, filteredTasks, sortOrder, handleSortByDate, renderTa
               Completed ({countTasksByStatus("complete")})
             </td>
           </tr>
-          {renderTaskRows("complete")}
+          {renderTaskRows("completed")}
         </tbody>
       </table>
     );

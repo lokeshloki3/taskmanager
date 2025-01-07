@@ -104,11 +104,12 @@ const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, 
                             deleteTask={deleteTask}
                         />
                     )
-                    ) : (
+                    ) : searchQuery && isSearchEmpty ? (
                         <div className="flex flex-col gap-4 justify-center items-center">
                             <img src={notfound} alt="Not found image" className="w-80 h-auto" />
                             <p className="text-center text-gray-500">It looks like we can't find any results that match.</p>
-                        </div>)
+                        </div>
+                    ) : null
                 }
             </div>
         </div>

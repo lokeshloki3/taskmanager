@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "../components/firebaseConfig";
-import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
 import NewModal from "../components/NewModal";
 import EditTaskModal from "../components/EditTaskModal";
 import UserProfile from "../components/UserProfile";
@@ -58,7 +58,7 @@ const Profile = () => {
     }
 
     setFilteredTasks(filtered);
-    setIsSearchEmpty(filtered.length === 0);  
+    setIsSearchEmpty(filtered.length === 0);
   }, [tasks, categoryFilter, dateFilter, searchQuery]);
 
   const getUserTasks = async (user) => {
@@ -69,9 +69,27 @@ const Profile = () => {
       const taskList = taskSnapshot.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
+        isChecked: doc.data().isChecked || false,
       }));
       setTasks(taskList);
     }
+  };
+
+
+  const handleCheckboxChange = async (taskId) => {
+    const task = tasks.find((task) => task.id === taskId);
+    const newCheckedState = !task.isChecked;
+
+    const taskRef = doc(db, "tasks", userDetails.uid, userDetails.displayName || "default", taskId);
+    await updateDoc(taskRef, {
+      isChecked: newCheckedState,
+    });
+
+    setTasks(
+      tasks.map((task) =>
+        task.id === taskId ? { ...task, isChecked: newCheckedState } : task
+      )
+    );
   };
 
   const handleLogout = async () => {
@@ -131,7 +149,11 @@ const Profile = () => {
       <tr key={task.id} className="bg-gray-100">
         <td className="border px-4 py-2">
           <div className="flex gap-4 justify-start">
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              checked={task.isChecked}
+              onChange={() => handleCheckboxChange(task.id)}
+            />
             <div>{task.task}</div>
           </div>
         </td>
