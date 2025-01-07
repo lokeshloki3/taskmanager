@@ -11,6 +11,7 @@ const Profile = () => {
   const [showModal, setShowModal] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -20,12 +21,12 @@ const Profile = () => {
       }
     });
 
-    return () => unsubscribe(); // Clean up subscription
+    return () => unsubscribe();
   }, []);
 
   const getUserTasks = async (user) => {
     if (user) {
-      const displayName = user.displayName || 'default';
+      const displayName = user.displayName || "default";
       const tasksRef = collection(db, "tasks", user.uid, displayName);
       const taskSnapshot = await getDocs(tasksRef);
       const taskList = taskSnapshot.docs.map((doc) => ({
@@ -56,7 +57,7 @@ const Profile = () => {
     if (isConfirmed) {
       try {
         const user = auth.currentUser;
-        const displayName = user.displayName || 'default';
+        const displayName = user.displayName || "default";
         const taskDocRef = doc(db, "tasks", user.uid, displayName, id);
         await deleteDoc(taskDocRef);
         setTasks(tasks.filter((task) => task.id !== id));
@@ -74,15 +75,98 @@ const Profile = () => {
   };
   const closeEditModal = () => setEditModalOpen(false);
 
+  const renderTaskRows = (status) => {
+
+    const filteredTasks = tasks.filter((task) => task.status === status);
+
+    if (filteredTasks.length === 0) {
+      return (
+        <tr>
+          <td colSpan="5" className="text-center text-gray-500 py-4">
+            No Tasks in {status.charAt(0).toUpperCase() + status.slice(1)}
+          </td>
+        </tr>
+      );
+    }
+
+    return tasks
+      .filter((task) => task.status === status)
+      .map((task) => (
+        <tr key={task.id}>
+          <td className="border px-4 py-2">
+            <div className="flex gap-4 justify-start">
+              <input type="checkbox" />
+              <div>{task.task}</div>
+            </div>
+          </td>
+          <td className="border px-4 py-2 text-center">
+            {task.dueDate?.seconds
+              ? new Date(task.dueDate.seconds * 1000).toLocaleDateString()
+              : "No Due Date"}
+          </td>
+          <td className="border px-4 py-2 text-center">
+            <span
+              className={`px-2 py-1 rounded-full ${task.status === "todo"
+                ? "bg-yellow-300"
+                : task.status === "inprogress"
+                  ? "bg-blue-300"
+                  : "bg-green-300"
+                }`}
+            >
+              {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+            </span>
+          </td>
+          <td className="border px-4 py-2 text-center">{task.category}</td>
+          <td className="border px-4 py-2 text-center">
+            <button
+              onClick={() => openEditModal(task)}
+              className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => deleteTask(task.id)}
+              className="bg-red-500 text-white px-4 py-2 rounded"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      ));
+  };
+
+  const countTasksByStatus = (status) => {
+    return tasks.filter((task) => task.status === status).length;
+  }
+
+  const handleSortByDate = () => {
+    const sortedTasks = [...tasks].sort((a, b) => {
+      const dateA = a.dueDate?.seconds || 0;
+      const dateB = b.dueDate?.seconds || 0;
+      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
+    setTasks(sortedTasks);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
   return (
-    <div>
+    <div className="mr-4 ml-4">
       {userDetails ? (
         <>
           <div className="flex justify-between m-10">
-            <div>
+            <div className="flex flex-col gap-4">
               <div className="flex gap-4 justify-center items-center text-4xl">
                 <BiTask />
                 <p>TaskBuddy</p>
+              </div>
+              <div className="flex gap-4">
+                <p>List</p>
+                <p>Board</p>
+              </div>
+              <div className="flex gap-4">
+                <p>Filter By</p>
+                <p>Category</p>
+                <p>Due Date</p>
               </div>
             </div>
             <div className="flex flex-col gap-2 items-center">
@@ -107,9 +191,6 @@ const Profile = () => {
               </button>
             </div>
           </div>
-          {/* <div>
-            <p>Email: {userDetails.email}</p>
-          </div> */}
         </>
       ) : (
         <p>Loading...</p>
@@ -118,54 +199,34 @@ const Profile = () => {
       <table className="table-auto w-full border-collapse">
         <thead>
           <tr>
-            <th className="border px-4 py-2">Task</th>
-            <th className="border px-4 py-2">Category</th>
-            <th className="border px-4 py-2">Due Date</th>
-            <th className="border px-4 py-2">Status</th>
+            <th className="border px-4 py-2">Task Name</th>
+            <th className="border px-4 py-2 cursor-pointer" onClick={handleSortByDate}>Due On {sortOrder === "asc" ? "↑" : "↓"}</th>
+            <th className="border px-4 py-2">Task Status</th>
+            <th className="border px-4 py-2">Task Category</th>
             <th className="border px-4 py-2">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {tasks.map((task) => (
-            <tr key={task.id}>
-              <td className="border px-4 py-2">
-                <input type="checkbox" />
-                {task.task}
-              </td>
-              <td className="border px-4 py-2">{task.category}</td>
-              <td className="border px-4 py-2">
-                {task.dueDate?.seconds
-                  ? new Date(task.dueDate.seconds * 1000).toLocaleDateString()
-                  : "No Due Date"}
-              </td>
-              <td className="border px-4 py-2">
-                <span
-                  className={`px-2 py-1 rounded-full ${task.status === "todo"
-                    ? "bg-yellow-300"
-                    : task.status === "inprogress"
-                      ? "bg-blue-300"
-                      : "bg-green-300"
-                    }`}
-                >
-                  {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-                </span>
-              </td>
-              <td className="border px-4 py-2">
-                <button
-                  onClick={() => openEditModal(task)}
-                  className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => deleteTask(task.id)}
-                  className="bg-red-500 text-white px-4 py-2 rounded"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
+          <tr>
+            <td colSpan="5" className="text-left bg-pink-100 font-bold px-4 py-2">
+              To-Do ({countTasksByStatus("todo")})
+            </td>
+          </tr>
+          {renderTaskRows("todo")}
+
+          <tr>
+            <td colSpan="5" className="text-left bg-pink-100 font-bold px-4 py-2">
+              In Progress ({countTasksByStatus("inprogress")})
+            </td>
+          </tr>
+          {renderTaskRows("inprogress")}
+
+          <tr>
+            <td colSpan="5" className="text-left bg-pink-100 font-bold px-4 py-2">
+              Completed ({countTasksByStatus("complete")})
+            </td>
+          </tr>
+          {renderTaskRows("complete")}
         </tbody>
       </table>
 
