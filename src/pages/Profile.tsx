@@ -205,7 +205,13 @@ const Profile = () => {
         <p>Loading...</p>
       )}
 
-      {showModal && <NewModal isOpen={showModal} onClose={closeModal} onTaskAdded={onTaskEditAdded} />}
+      {showModal &&
+        <NewModal
+          isOpen={showModal}
+          onClose={closeModal}
+          onTaskAdded={onTaskEditAdded}
+        />}
+
       {editModalOpen && taskToEdit && (
         <EditTaskModal
           isOpen={editModalOpen}

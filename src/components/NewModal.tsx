@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { addDoc, collection } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig';
-import TaskForm from './TaskForm';
+import Hero from './Hero';
 
 const NewModal = ({ isOpen, onClose, onTaskAdded }) => {
   const [taskTitle, setTaskTitle] = useState('');
@@ -53,7 +53,7 @@ const NewModal = ({ isOpen, onClose, onTaskAdded }) => {
         <hr />
 
         <form onSubmit={submitTask}>
-          <TaskForm
+          <Hero
             taskTitle={taskTitle}
             setTaskTitle={setTaskTitle}
             taskDesc={taskDesc}
