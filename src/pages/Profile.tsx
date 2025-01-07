@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "../components/firebaseConfig";
 import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
-import { BiTask, BiLogOut } from "react-icons/bi";
 import NewModal from "../components/NewModal";
 import EditTaskModal from "../components/EditTaskModal";
+import UserProfile from "../components/UserProfile";
+import TaskTable from "../components/TaskTable";
 
 const Profile = () => {
   const [userDetails, setUserDetails] = useState(null);
@@ -165,7 +166,7 @@ const Profile = () => {
 
   const countTasksByStatus = (status) => {
     return tasks.filter((task) => task.status === status).length;
-  }
+  };
 
   const handleSortByDate = () => {
     const sortedTasks = [...tasks].sort((a, b) => {
@@ -185,96 +186,25 @@ const Profile = () => {
     <div className="mr-4 ml-4">
       {userDetails ? (
         <>
-          <div className="flex justify-between m-10">
-            <div className="flex flex-col gap-4">
-              <div className="flex gap-4 justify-center items-center text-4xl">
-                <BiTask />
-                <p>TaskBuddy</p>
-              </div>
-              <div className="flex gap-4">
-                <p>List</p>
-                <p>Board</p>
-              </div>
-              <div className="flex gap-4 items-center">
-                <p>Filter By</p>
-                <select
-                  className="border rounded-lg p-2 cursor-pointer"
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                >
-                  <option value="">All Categories</option>
-                  <option value="work">Work</option>
-                  <option value="professional">Professional</option>
-                </select>
-                <select
-                  className="border rounded-lg p-2 cursor-pointer"
-                  onChange={(e) => handleDateFilter(e.target.value)}
-                >
-                  <option value="">All Dates</option>
-                  <option value="3">Next 3 Days</option>
-                  <option value="7">Next 7 Days</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 items-center">
-              <div className="flex justify-center items-center gap-2">
-                <img src={userDetails.photoURL} className="rounded-full w-16 h-auto" />
-                <h3>{userDetails.displayName}</h3>
-              </div>
-              <div
-                className="flex justify-center items-center text-sm p-2 gap-1 rounded-lg w-24 cursor-pointer border border-red-200"
-                onClick={handleLogout}
-                style={{ backgroundColor: "#F8F3F3" }}
-              >
-                <BiLogOut />
-                <p>Logout</p>
-              </div>
-              <button
-                onClick={openModal}
-                className="text-white px-10 py-2 rounded-3xl"
-                style={{ backgroundColor: "#7B1A84" }}
-              >
-                Add Task
-              </button>
-            </div>
-          </div>
+          <UserProfile
+            userDetails={userDetails}
+            setCategoryFilter={setCategoryFilter}
+            handleLogout={handleLogout}
+            openModal={openModal}
+            handleDateFilter={handleDateFilter}
+          />
+          <TaskTable
+            tasks={tasks}
+            filteredTasks={filteredTasks}
+            sortOrder={sortOrder}
+            handleSortByDate={handleSortByDate}
+            renderTaskRows={renderTaskRows}
+            countTasksByStatus={countTasksByStatus}
+          />
         </>
       ) : (
         <p>Loading...</p>
       )}
-
-      <table className="table-auto w-full border-collapse">
-        <thead>
-          <tr>
-            <th className="border px-4 py-2">Task Name</th>
-            <th className="border px-4 py-2 cursor-pointer" onClick={handleSortByDate}>Due On {sortOrder === "asc" ? "↑" : "↓"}</th>
-            <th className="border px-4 py-2">Task Status</th>
-            <th className="border px-4 py-2">Task Category</th>
-            <th className="border px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td colSpan="5" className="text-left bg-pink-100 font-bold px-4 py-2">
-              To-Do ({countTasksByStatus("todo")})
-            </td>
-          </tr>
-          {renderTaskRows("todo")}
-
-          <tr>
-            <td colSpan="5" className="text-left bg-pink-100 font-bold px-4 py-2">
-              In Progress ({countTasksByStatus("inprogress")})
-            </td>
-          </tr>
-          {renderTaskRows("inprogress")}
-
-          <tr>
-            <td colSpan="5" className="text-left bg-pink-100 font-bold px-4 py-2">
-              Completed ({countTasksByStatus("complete")})
-            </td>
-          </tr>
-          {renderTaskRows("complete")}
-        </tbody>
-      </table>
 
       {showModal && <NewModal isOpen={showModal} onClose={closeModal} onTaskAdded={onTaskEditAdded} />}
       {editModalOpen && taskToEdit && (
