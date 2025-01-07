@@ -12,9 +12,9 @@ const Profile = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
-  const [sortCategoryOrder, setSortCategoryOrder] = useState("asc");
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -28,15 +28,30 @@ const Profile = () => {
   }, []);
 
   useEffect(() => {
+    let filtered = tasks;
+
     if (categoryFilter) {
-      const filtered = tasks.filter(
+      filtered = filtered.filter(
         (task) => task.category?.toLowerCase() === categoryFilter.toLowerCase()
       );
-      setFilteredTasks(filtered);
-    } else {
-      setFilteredTasks(tasks);
     }
-  }, [tasks, categoryFilter]);
+
+    if (dateFilter) {
+      const today = new Date();
+      const futureDate = new Date();
+      futureDate.setDate(today.getDate() + parseInt(dateFilter));
+
+      filtered = filtered.filter((task) => {
+        if (task.dueDate?.seconds) {
+          const taskDate = new Date(task.dueDate.seconds * 1000);
+          return taskDate >= today && taskDate <= futureDate;
+        }
+        return false;
+      });
+    }
+
+    setFilteredTasks(filtered);
+  }, [tasks, categoryFilter, dateFilter]);
 
   const getUserTasks = async (user) => {
     if (user) {
@@ -90,7 +105,6 @@ const Profile = () => {
   const closeEditModal = () => setEditModalOpen(false);
 
   const renderTaskRows = (status) => {
-
     const filteredByStatus = filteredTasks.filter(
       (task) => task.status === status
     );
@@ -163,6 +177,10 @@ const Profile = () => {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
 
+  const handleDateFilter = (days) => {
+    setDateFilter(days);
+  };
+
   return (
     <div className="mr-4 ml-4">
       {userDetails ? (
@@ -187,7 +205,14 @@ const Profile = () => {
                   <option value="work">Work</option>
                   <option value="professional">Professional</option>
                 </select>
-                <p className="cursor-pointer border rounded-lg p-2" onClick={handleSortByDate}>Due Date</p>
+                <select
+                  className="border rounded-lg p-2 cursor-pointer"
+                  onChange={(e) => handleDateFilter(e.target.value)}
+                >
+                  <option value="">All Dates</option>
+                  <option value="3">Next 3 Days</option>
+                  <option value="7">Next 7 Days</option>
+                </select>
               </div>
             </div>
             <div className="flex flex-col gap-2 items-center">
