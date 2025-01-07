@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { auth, db } from "../components/firebaseConfig";
 import { collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
 import NewModal from "../components/NewModal";
 import EditTaskModal from "../components/EditTaskModal";
 import UserProfile from "../components/UserProfile";
+import { IoSearchOutline } from "react-icons/io5";
 
 const Profile = () => {
   const [userDetails, setUserDetails] = useState(null);
@@ -17,6 +18,8 @@ const Profile = () => {
   const [dateFilter, setDateFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchEmpty, setIsSearchEmpty] = useState(false);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -213,6 +216,32 @@ const Profile = () => {
     setDateFilter(days);
   };
 
+  const categoryDropdownRef = useRef(null);
+  const dateDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        categoryDropdownRef.current &&
+        !categoryDropdownRef.current.contains(event.target)
+      ) {
+        setCategoryDropdownOpen(false);
+      }
+      if (
+        dateDropdownRef.current &&
+        !dateDropdownRef.current.contains(event.target)
+      ) {
+        setDateDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
+
   return (
     <div>
       {/* for large screens */}
@@ -261,9 +290,9 @@ const Profile = () => {
       </div>
 
       {/* For Small Screens */}
-      <div className="block lg:hidden">
+      <div className="block lg:hidden m-4">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center p-4 bg-pink-50 mb-4">
           <h1 className="text-xl font-bold">TaskBuddy</h1>
           <img
             src={userDetails?.photoURL}
@@ -284,25 +313,101 @@ const Profile = () => {
 
         {/* Filter and Search */}
         <div className="space-y-4">
-          <div>
-            <label htmlFor="filter" className="block text-sm font-medium">
-              Filter by
-            </label>
-            <select
-              id="filter"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              onChange={(e) => console.log(e.target.value)}
-            >
-              <option value="">All</option>
-              <option value="todo">To-Do</option>
-              <option value="inprogress">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
+          <div className="flex flex-col gap-2 items-start">
+            <p className="text-sm text-gray-500">Filter By:</p>
+            <div className="flex gap-4 w-80">
+              {/* Category Filter Dropdown */}
+              <div className="relative" ref={categoryDropdownRef}>
+                <button
+                  onClick={() => {
+                    setCategoryDropdownOpen(!categoryDropdownOpen);
+                    setDateDropdownOpen(false);
+                  }}
+                  className="w-full border rounded-lg h-10 text-sm p-2 text-left focus:ring focus:ring-purple-200"
+                >
+                  {categoryFilter || "All Categories"}
+                </button>
+                {categoryDropdownOpen && (
+                  <ul className="absolute z-10 bg-white border rounded-lg shadow-lg mt-1 w-full">
+                    <li
+                      className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      onClick={() => {
+                        setCategoryFilter("");
+                        setCategoryDropdownOpen(false);
+                      }}
+                    >
+                      All Categories
+                    </li>
+                    <li
+                      className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      onClick={() => {
+                        setCategoryFilter("work");
+                        setCategoryDropdownOpen(false);
+                      }}
+                    >
+                      Work
+                    </li>
+                    <li
+                      className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      onClick={() => {
+                        setCategoryFilter("professional");
+                        setCategoryDropdownOpen(false);
+                      }}
+                    >
+                      Professional
+                    </li>
+                  </ul>
+                )}
+              </div>
+
+              {/* Date Filter Dropdown */}
+              <div className="relative" ref={dateDropdownRef}>
+                <button
+                  onClick={() => {
+                    setDateDropdownOpen(!dateDropdownOpen);
+                    setCategoryDropdownOpen(false);
+                  }}
+                  className="w-full border rounded-lg h-10 text-sm p-2 text-left focus:ring focus:ring-purple-200"
+                >
+                  {dateFilter ? `Next ${dateFilter} Days` : "All Due Dates"}
+                </button>
+                {dateDropdownOpen && (
+                  <ul className="absolute z-10 bg-white border rounded-lg shadow-lg mt-1 w-full">
+                    <li
+                      className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      onClick={() => {
+                        setDateFilter("");
+                        setDateDropdownOpen(false);
+                      }}
+                    >
+                      All Due Dates
+                    </li>
+                    <li
+                      className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      onClick={() => {
+                        setDateFilter("3");
+                        setDateDropdownOpen(false);
+                      }}
+                    >
+                      Next 3 Days
+                    </li>
+                    <li
+                      className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      onClick={() => {
+                        setDateFilter("7");
+                        setDateDropdownOpen(false);
+                      }}
+                    >
+                      Next 7 Days
+                    </li>
+                  </ul>
+                )}
+              </div>
+
+            </div>
           </div>
-          <div>
-            <label htmlFor="search" className="block text-sm font-medium">
-              Search
-            </label>
+          <div className="flex items-center w-full mx-auto bg-white rounded-lg border border-blue-800 ">
+            <IoSearchOutline className="text-3xl pl-2" />
             <input
               type="text"
               className="p-3 rounded-lg w-full focus:outline-none"
@@ -315,34 +420,75 @@ const Profile = () => {
 
         {/* Task Groups */}
         <div className="space-y-6">
-          {["todo", "inprogress", "completed"].map((status) => (
-            <div key={status} className="space-y-2">
-              <h2 className="text-lg font-semibold capitalize">{status}</h2>
-              <div className="space-y-2">
-                {tasks
-                  .filter((task) => task.status === status) // Filter tasks by status
-                  .map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center gap-3 p-2 bg-gray-100 rounded-lg"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={task.isChecked}
-                        onChange={() => handleCheckboxChange(task.id)}
-                      />
-                      <span>{task.task}</span>
-                    </div>
-                  ))}
+          {["todo", "inprogress", "completed"].map((status) => {
+            const headingColor =
+              status === "todo"
+                ? "bg-pink-100"
+                : status === "inprogress"
+                  ? "bg-sky-100"
+                  : "bg-green-100";
+
+            return (
+              <div key={status} className="space-y-2 mt-4">
+                <h2 className={`text-lg font-semibold p-4 rounded-xl capitalize ${headingColor}`}>
+                  {status}
+                </h2>
+                <div className="space-y-2">
+                  {filteredTasks
+                    .filter((task) => task.status === status)
+                    .map((task) => (
+                      <div
+                        key={task.id}
+                        className="flex justify-between items-center gap-3 p-2 bg-gray-100 rounded-lg"
+                      >
+                        <div className="flex gap-2">
+                          <input
+                            type="checkbox"
+                            checked={task.isChecked}
+                            onChange={() => handleCheckboxChange(task.id)}
+                          />
+                          <span>{task.task}</span>
+                        </div>
+
+                        <div className="flex flex-col gap-0">
+                          <p>{task.dueDate.toDate().toLocaleDateString()}</p>
+                          <div className="flex gap-2">
+                            <button
+                              className="text-blue-500"
+                              onClick={() => openEditModal(task)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="text-red-500"
+                              onClick={() => deleteTask(task.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
         {showModal && (
           <NewModal
             isOpen={showModal}
             onClose={closeModal}
             onTaskAdded={onTaskEditAdded}
+          />
+        )}
+        {editModalOpen && taskToEdit && (
+          <EditTaskModal
+            isOpen={editModalOpen}
+            onClose={closeEditModal}
+            taskId={taskToEdit.id}
+            initialTaskData={taskToEdit}
+            onEdit={onTaskEditAdded}
           />
         )}
       </div>

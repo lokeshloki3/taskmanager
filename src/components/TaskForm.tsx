@@ -31,7 +31,7 @@ const TaskForm = ({
     <div className="text-right text-sm mt-1">
       <span>{taskDesc.length}/300</span>
     </div>
-    <div className="flex justify-between mt-3 flex-col md:flex-row">
+    <div className="flex justify-between mt-3 flex-col gap-4 md:gap-0 md:flex-row">
       <div className="flex flex-col gap-2">
         <p>Task Category*</p>
         <div className="flex gap-2">
