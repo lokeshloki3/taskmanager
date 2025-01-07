@@ -14,7 +14,7 @@ const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, 
         <div>
             <div className="flex justify-between m-10">
                 <div className="flex flex-col gap-4">
-                    <div className="flex gap-4 justify-center items-center text-4xl">
+                    <div className="flex gap-4 justify-start items-center text-4xl">
                         <BiTask />
                         <p>TaskBuddy</p>
                     </div>

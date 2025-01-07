@@ -1,5 +1,5 @@
 const TaskBoard = ({ tasks, filteredTasks, countTasksByStatus, openEditModal, deleteTask }) => {
-  const taskStatuses = ['todo', 'inprogress', 'complete'];
+  const taskStatuses = ['todo', 'inprogress', 'completed'];
 
   return (
     <div className="flex gap-8">

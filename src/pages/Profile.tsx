@@ -214,49 +214,139 @@ const Profile = () => {
   };
 
   return (
-    <div className="mr-4 ml-4">
-      {userDetails ? (
-        <>
-          <UserProfile
-            userDetails={userDetails}
-            setCategoryFilter={setCategoryFilter}
-            handleLogout={handleLogout}
-            openModal={openModal}
-            handleDateFilter={handleDateFilter}
-            tasks={tasks}
-            filteredTasks={filteredTasks}
-            sortOrder={sortOrder}
-            handleSortByDate={handleSortByDate}
-            renderTaskRows={renderTaskRows}
-            countTasksByStatus={countTasksByStatus}
-            openEditModal={openEditModal}
-            deleteTask={deleteTask}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            isSearchEmpty={isSearchEmpty}
+    <div>
+      {/* for large screens */}
+      <div className="mr-4 ml-4 hidden lg:block">
+        {userDetails ? (
+          <>
+            <UserProfile
+              userDetails={userDetails}
+              setCategoryFilter={setCategoryFilter}
+              handleLogout={handleLogout}
+              openModal={openModal}
+              handleDateFilter={handleDateFilter}
+              tasks={tasks}
+              filteredTasks={filteredTasks}
+              sortOrder={sortOrder}
+              handleSortByDate={handleSortByDate}
+              renderTaskRows={renderTaskRows}
+              countTasksByStatus={countTasksByStatus}
+              openEditModal={openEditModal}
+              deleteTask={deleteTask}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              isSearchEmpty={isSearchEmpty}
+            />
+          </>
+        ) : (
+          <p>Loading...</p>
+        )}
+
+        {showModal &&
+          <NewModal
+            isOpen={showModal}
+            onClose={closeModal}
+            onTaskAdded={onTaskEditAdded}
+          />}
+
+        {editModalOpen && taskToEdit && (
+          <EditTaskModal
+            isOpen={editModalOpen}
+            onClose={closeEditModal}
+            taskId={taskToEdit.id}
+            initialTaskData={taskToEdit}
+            onEdit={onTaskEditAdded}
           />
-        </>
-      ) : (
-        <p>Loading...</p>
-      )}
+        )}
+      </div>
 
-      {showModal &&
-        <NewModal
-          isOpen={showModal}
-          onClose={closeModal}
-          onTaskAdded={onTaskEditAdded}
-        />}
+      {/* For Small Screens */}
+      <div className="block lg:hidden">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-xl font-bold">TaskBuddy</h1>
+          <img
+            src={userDetails?.photoURL}
+            alt="User"
+            className="w-10 h-10 rounded-full"
+          />
+        </div>
 
-      {editModalOpen && taskToEdit && (
-        <EditTaskModal
-          isOpen={editModalOpen}
-          onClose={closeEditModal}
-          taskId={taskToEdit.id}
-          initialTaskData={taskToEdit}
-          onEdit={onTaskEditAdded}
-        />
-      )}
-    </div>
+        <div className="flex justify-end">
+          <button
+            onClick={openModal}
+            className="text-white px-10 py-2 rounded-3xl"
+            style={{ backgroundColor: "#7B1A84" }}
+          >
+            Add Task
+          </button>
+        </div>
+
+        {/* Filter and Search */}
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="filter" className="block text-sm font-medium">
+              Filter by
+            </label>
+            <select
+              id="filter"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              onChange={(e) => console.log(e.target.value)}
+            >
+              <option value="">All</option>
+              <option value="todo">To-Do</option>
+              <option value="inprogress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="search" className="block text-sm font-medium">
+              Search
+            </label>
+            <input
+              type="text"
+              className="p-3 rounded-lg w-full focus:outline-none"
+              placeholder="Search Tasks"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Task Groups */}
+        <div className="space-y-6">
+          {["todo", "inprogress", "completed"].map((status) => (
+            <div key={status} className="space-y-2">
+              <h2 className="text-lg font-semibold capitalize">{status}</h2>
+              <div className="space-y-2">
+                {tasks
+                  .filter((task) => task.status === status) // Filter tasks by status
+                  .map((task) => (
+                    <div
+                      key={task.id}
+                      className="flex items-center gap-3 p-2 bg-gray-100 rounded-lg"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={task.isChecked}
+                        onChange={() => handleCheckboxChange(task.id)}
+                      />
+                      <span>{task.task}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        {showModal && (
+          <NewModal
+            isOpen={showModal}
+            onClose={closeModal}
+            onTaskAdded={onTaskEditAdded}
+          />
+        )}
+      </div>
+    </div >
   );
 };
 
