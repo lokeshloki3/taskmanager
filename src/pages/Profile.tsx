@@ -16,6 +16,7 @@ const Profile = () => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchEmpty, setIsSearchEmpty] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -57,6 +58,7 @@ const Profile = () => {
     }
 
     setFilteredTasks(filtered);
+    setIsSearchEmpty(filtered.length === 0);  
   }, [tasks, categoryFilter, dateFilter, searchQuery]);
 
   const getUserTasks = async (user) => {
@@ -126,7 +128,7 @@ const Profile = () => {
     }
 
     return filteredByStatus.map((task) => (
-      <tr key={task.id}>
+      <tr key={task.id} className="bg-gray-100">
         <td className="border px-4 py-2">
           <div className="flex gap-4 justify-start">
             <input type="checkbox" />
@@ -140,11 +142,11 @@ const Profile = () => {
         </td>
         <td className="border px-4 py-2 text-center">
           <span
-            className={`px-2 py-1 rounded-full ${task.status === "todo"
-              ? "bg-yellow-300"
+            className={`px-2 py-1 rounded-lg ${task.status === "todo"
+              ? "bg-pink-100"
               : task.status === "inprogress"
-                ? "bg-blue-300"
-                : "bg-green-300"
+                ? "bg-sky-100"
+                : "bg-green-100"
               }`}
           >
             {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
@@ -154,13 +156,13 @@ const Profile = () => {
         <td className="border px-4 py-2 text-center">
           <button
             onClick={() => openEditModal(task)}
-            className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+            className="bg-gray-500 text-white px-4 py-1 rounded-lg mr-2"
           >
             Edit
           </button>
           <button
             onClick={() => deleteTask(task.id)}
-            className="bg-red-500 text-white px-4 py-2 rounded"
+            className="bg-red-500 text-white px-4 py-1 rounded-lg"
           >
             Delete
           </button>
@@ -207,6 +209,7 @@ const Profile = () => {
             deleteTask={deleteTask}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
+            isSearchEmpty={isSearchEmpty}
           />
         </>
       ) : (

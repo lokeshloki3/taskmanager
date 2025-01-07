@@ -2,8 +2,12 @@ import { BiTask, BiLogOut } from "react-icons/bi";
 import { useState } from "react";
 import TaskTable from './TaskTable';
 import TaskBoard from './TaskBoard';
+import { IoSearchOutline } from "react-icons/io5";
+import notfound from "../assets/notfound.png";
+import { CiViewList } from "react-icons/ci";
+import { CiViewBoard } from "react-icons/ci";
 
-const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, handleDateFilter, tasks, filteredTasks, sortOrder, handleSortByDate, renderTaskRows, countTasksByStatus, openEditModal, deleteTask, searchQuery, setSearchQuery }) => {
+const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, handleDateFilter, tasks, filteredTasks, sortOrder, handleSortByDate, renderTaskRows, countTasksByStatus, openEditModal, deleteTask, searchQuery, setSearchQuery, isSearchEmpty }) => {
     const [view, setView] = useState('list');
 
     return (
@@ -15,29 +19,21 @@ const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, 
                         <p>TaskBuddy</p>
                     </div>
                     <div className="flex gap-4">
-                        <p
-                            className={`cursor-pointer ${view === 'list' ? 'font-bold' : ''}`}
-                            onClick={() => {
-                                setView('list');
-                                console.log('View set to list');
-                            }}
-                        >
-                            List
-                        </p>
-                        <p
-                            className={`cursor-pointer ${view === 'board' ? 'font-bold' : ''}`}
-                            onClick={() => {
-                                setView('board');
-                                console.log('View set to board');
-                            }}
-                        >
-                            Board
-                        </p>
+                        <div className={`cursor-pointer flex justify-center items-center gap-1 ${view === 'list' ? 'font-bold underline' : ''}`}
+                            onClick={() => setView('list')}>
+                            <CiViewList />
+                            <p>List</p>
+                        </div>
+                        <div className={`cursor-pointer flex justify-center items-center gap-1 ${view === 'board' ? 'font-bold underline' : ''}`}
+                            onClick={() => setView('board')}>
+                            <CiViewBoard />
+                            <p>Board</p>
+                        </div>
                     </div>
                     <div className="flex gap-4 items-center">
-                        <p>Filter By</p>
+                        <p className="text-sm text-gray-500">Filter By:</p>
                         <select
-                            className="border rounded-lg p-2 cursor-pointer"
+                            className="border rounded-lg p-2 cursor-pointer text-sm"
                             onChange={(e) => setCategoryFilter(e.target.value)}
                         >
                             <option value="">All Categories</option>
@@ -45,10 +41,10 @@ const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, 
                             <option value="professional">Professional</option>
                         </select>
                         <select
-                            className="border rounded-lg p-2 cursor-pointer"
+                            className="border rounded-lg p-2 cursor-pointer text-sm"
                             onChange={(e) => handleDateFilter(e.target.value)}
                         >
-                            <option value="">All Dates</option>
+                            <option value="">All Due Dates</option>
                             <option value="3">Next 3 Days</option>
                             <option value="7">Next 7 Days</option>
                         </select>
@@ -68,13 +64,16 @@ const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, 
                         <p>Logout</p>
                     </div>
                     <div className="flex gap-6 mb-4 mt-4">
-                        <input
-                            type="text"
-                            className="p-2 border rounded-lg w-1/3"
-                            placeholder="Search Tasks"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                        <div className="flex items-center w-[50%] mx-auto bg-white rounded-lg border border-blue-800 ">
+                            <IoSearchOutline className="text-3xl pl-2" />
+                            <input
+                                type="text"
+                                className="p-3 rounded-lg w-full focus:outline-none"
+                                placeholder="Search Tasks"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
                         <button
                             onClick={openModal}
                             className="text-white px-10 py-2 rounded-3xl"
@@ -86,24 +85,31 @@ const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, 
                 </div>
             </div>
             <div>
-                {view === 'list' ? (
-                    <TaskTable
-                        tasks={tasks}
-                        filteredTasks={filteredTasks}
-                        sortOrder={sortOrder}
-                        handleSortByDate={handleSortByDate}
-                        renderTaskRows={renderTaskRows}
-                        countTasksByStatus={countTasksByStatus}
-                    />
-                ) : (
-                    <TaskBoard
-                        tasks={tasks}
-                        filteredTasks={filteredTasks}
-                        countTasksByStatus={countTasksByStatus}
-                        openEditModal={openEditModal}
-                        deleteTask={deleteTask}
-                    />
-                )}
+                {filteredTasks.length > 0 && !isSearchEmpty ?
+                    (view === 'list' ? (
+                        <TaskTable
+                            tasks={tasks}
+                            filteredTasks={filteredTasks}
+                            sortOrder={sortOrder}
+                            handleSortByDate={handleSortByDate}
+                            renderTaskRows={renderTaskRows}
+                            countTasksByStatus={countTasksByStatus}
+                        />
+                    ) : (
+                        <TaskBoard
+                            tasks={tasks}
+                            filteredTasks={filteredTasks}
+                            countTasksByStatus={countTasksByStatus}
+                            openEditModal={openEditModal}
+                            deleteTask={deleteTask}
+                        />
+                    )
+                    ) : (
+                        <div className="flex flex-col gap-4 justify-center items-center">
+                            <img src={notfound} alt="Not found image" className="w-80 h-auto" />
+                            <p className="text-center text-gray-500">It looks like we can't find any results that match.</p>
+                        </div>)
+                }
             </div>
         </div>
     );

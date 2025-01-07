@@ -38,18 +38,16 @@ const TaskForm = ({
           <button
             type="button"
             onClick={() => setCategory('work')}
-            className={`border border-black p-1 pr-5 pl-5 text-sm rounded-xl ${
-              category === 'work' ? 'bg-[#CBABCE] text-white' : ''
-            }`}
+            className={`border border-black p-1 pr-5 pl-5 text-sm rounded-xl ${category === 'work' ? 'bg-[#CBABCE] text-white' : ''
+              }`}
           >
             Work
           </button>
           <button
             type="button"
             onClick={() => setCategory('professional')}
-            className={`border border-black p-1 pr-5 pl-5 text-sm rounded-xl ${
-              category === 'professional' ? 'bg-[#CBABCE] text-white' : ''
-            }`}
+            className={`border border-black p-1 pr-5 pl-5 text-sm rounded-xl ${category === 'professional' ? 'bg-[#CBABCE] text-white' : ''
+              }`}
           >
             Professional
           </button>

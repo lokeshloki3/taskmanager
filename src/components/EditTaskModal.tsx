@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { updateDoc, doc } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig';
-import Hero from './Hero';
+import TaskForm from './TaskForm';
 
 const EditTaskModal = ({ isOpen, onClose, taskId, initialTaskData, onEdit }) => {
   const [taskTitle, setTaskTitle] = useState('');
@@ -62,7 +62,7 @@ const EditTaskModal = ({ isOpen, onClose, taskId, initialTaskData, onEdit }) => 
       <div className="bg-white rounded-xl shadow-lg pb-3 pt-3 pr-6 pl-6 max-w-2xl w-full">
         <h2 className="text-2xl font-bold mb-2 text-center text-gray-800">Edit Task</h2>
         <form onSubmit={handleSubmit}>
-          <Hero
+          <TaskForm
             taskTitle={taskTitle}
             setTaskTitle={setTaskTitle}
             taskDesc={taskDesc}
