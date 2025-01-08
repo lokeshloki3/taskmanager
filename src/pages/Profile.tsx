@@ -6,6 +6,7 @@ import EditTaskModal from "../components/EditTaskModal";
 import UserProfile from "../components/UserProfile";
 import { IoSearchOutline } from "react-icons/io5";
 import { User } from "firebase/auth";
+import { BiLogOut } from "react-icons/bi";
 
 
 export interface Task {
@@ -332,7 +333,7 @@ const Profile = () => {
         <div className="space-y-4">
           <div className="flex flex-col gap-2 items-start">
             <p className="text-sm text-gray-500">Filter By:</p>
-            <div className="flex gap-4 w-80">
+            <div className="flex gap-4 w-full">
               {/* Category Filter Dropdown */}
               <div className="relative" ref={categoryDropdownRef}>
                 <button
@@ -419,6 +420,14 @@ const Profile = () => {
                     </li>
                   </ul>
                 )}
+              </div>
+              <div
+                className="flex justify-center items-center text-sm p-1 gap-1 rounded-lg w-24 cursor-pointer border border-red-200"
+                onClick={handleLogout}
+                style={{ backgroundColor: "#F8F3F3" }}
+              >
+                <BiLogOut />
+                <p>Logout</p>
               </div>
 
             </div>
