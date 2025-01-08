@@ -14,6 +14,7 @@ interface UserProfileProps {
     setCategoryFilter: (category: string) => void;
     handleLogout: () => void;
     openModal: () => void;
+    openDeleteModal: (task: Task) => void; 
     handleDateFilter: (date: string) => void;
     tasks: Task[];
     filteredTasks: Task[];
@@ -26,6 +27,9 @@ interface UserProfileProps {
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     isSearchEmpty: boolean;
+    isDeleteModalOpen: boolean; 
+    taskIdToDelete: string | null;
+    closeDeleteModal: () => void;
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({
@@ -45,6 +49,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
     searchQuery,
     setSearchQuery,
     isSearchEmpty,
+    openDeleteModal,
+    isDeleteModalOpen,
+    taskIdToDelete,
+    closeDeleteModal
 }) => {
     const [view, setView] = useState<"list" | "board">("list");
 
@@ -139,6 +147,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
                             countTasksByStatus={countTasksByStatus}
                             openEditModal={openEditModal}
                             deleteTask={deleteTask}
+                            openDeleteModal={openDeleteModal}
+                            isDeleteModalOpen={isDeleteModalOpen}
+                            taskIdToDelete={taskIdToDelete}
+                            closeDeleteModal={closeDeleteModal}
                         />
                     )
                     ) : searchQuery && isSearchEmpty ? (

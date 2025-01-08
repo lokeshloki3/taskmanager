@@ -1,15 +1,23 @@
 import { Timestamp } from "firebase/firestore";
 import { Task } from "../pages/Profile"
+import ConfirmationModal from "./ConfirmationModal";
 
 interface TaskBoardProps {
   tasks: Task[];
   filteredTasks: Task[];
   countTasksByStatus: (status: "todo" | "inprogress" | "completed") => number;
   openEditModal: (task: Task) => void;
+  openDeleteModal: (task: Task) => void;
   deleteTask: (taskId: string) => void;
+  isDeleteModalOpen: boolean;
+  taskIdToDelete: string | null;
+  closeDeleteModal: () => void;
 }
 
-const TaskBoard: React.FC<TaskBoardProps> = ({ filteredTasks, countTasksByStatus, openEditModal, deleteTask }) => {
+const TaskBoard: React.FC<TaskBoardProps> = ({ filteredTasks, countTasksByStatus, openEditModal, openDeleteModal, deleteTask,
+  isDeleteModalOpen,
+  taskIdToDelete,
+  closeDeleteModal, }) => {
   const taskStatuses: ("todo" | "inprogress" | "completed")[] = ['todo', 'inprogress', 'completed'];
 
   return (
@@ -46,7 +54,7 @@ const TaskBoard: React.FC<TaskBoardProps> = ({ filteredTasks, countTasksByStatus
                     </button>
                     <button
                       className="text-red-500"
-                      onClick={() => deleteTask(task.id)}
+                      onClick={() => openDeleteModal(task)}
                     >
                       Delete
                     </button>
@@ -54,7 +62,16 @@ const TaskBoard: React.FC<TaskBoardProps> = ({ filteredTasks, countTasksByStatus
                 </div>
               </div>
             ))}
+
           </div>
+          {isDeleteModalOpen && (
+            <ConfirmationModal
+              isOpen={isDeleteModalOpen}
+              message="Are you sure you want to delete this task?"
+              onConfirm={() => deleteTask(taskIdToDelete!)}
+              onCancel={closeDeleteModal}
+            />
+          )}
         </div>
       ))}
     </div>

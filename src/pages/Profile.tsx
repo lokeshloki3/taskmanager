@@ -132,8 +132,8 @@ const Profile = () => {
     }
   };
 
-  const openDeleteModal = (id: string) => {
-    setTaskIdToDelete(id);
+  const openDeleteModal = (task: Task) => {
+    setTaskIdToDelete(task.id);
     setDeleteModalOpen(true);
   };
 
@@ -223,7 +223,7 @@ const Profile = () => {
             Edit
           </button>
           <button
-            onClick={() => openDeleteModal(task.id)}
+            onClick={() => openDeleteModal(task)}
             className="bg-red-500 text-white px-4 py-1 rounded-lg"
           >
             Delete
@@ -297,6 +297,7 @@ const Profile = () => {
               setCategoryFilter={setCategoryFilter}
               handleLogout={handleLogout}
               openModal={openModal}
+              openDeleteModal={openDeleteModal}
               handleDateFilter={handleDateFilter}
               tasks={tasks}
               filteredTasks={filteredTasks}
@@ -309,6 +310,9 @@ const Profile = () => {
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               isSearchEmpty={isSearchEmpty}
+              isDeleteModalOpen={isDeleteModalOpen}
+              taskIdToDelete={taskIdToDelete}
+              closeDeleteModal={closeDeleteModal}
             />
           </>
         ) : (
@@ -517,7 +521,7 @@ const Profile = () => {
                             </button>
                             <button
                               className="text-red-500"
-                              onClick={() => openDeleteModal(task.id)}
+                              onClick={() => openDeleteModal(task)}
                             >
                               Delete
                             </button>
