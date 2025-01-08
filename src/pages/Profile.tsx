@@ -1,22 +1,34 @@
 import { useEffect, useRef, useState } from "react";
 import { auth, db } from "../components/firebaseConfig";
-import { collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, Timestamp, updateDoc } from "firebase/firestore";
 import NewModal from "../components/NewModal";
 import EditTaskModal from "../components/EditTaskModal";
 import UserProfile from "../components/UserProfile";
 import { IoSearchOutline } from "react-icons/io5";
+import { User } from "firebase/auth";
+
+
+export interface Task {
+  id: string;
+  task: string;
+  desc: string;
+  dueDate: string | Timestamp | null;
+  status: "todo" | "inprogress" | "completed";
+  category: string;
+  isChecked?: boolean;
+}
 
 const Profile = () => {
-  const [userDetails, setUserDetails] = useState(null);
-  const [tasks, setTasks] = useState([]);
+  const [userDetails, setUserDetails] = useState<User | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [taskToEdit, setTaskToEdit] = useState(null);
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [filteredTasks, setFilteredTasks] = useState([]);
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [dateFilter, setDateFilter] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSearchEmpty, setIsSearchEmpty] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
@@ -47,7 +59,7 @@ const Profile = () => {
       futureDate.setDate(today.getDate() + parseInt(dateFilter));
 
       filtered = filtered.filter((task) => {
-        if (task.dueDate?.seconds) {
+        if (task.dueDate instanceof Timestamp) {
           const taskDate = new Date(task.dueDate.seconds * 1000);
           return taskDate >= today && taskDate <= futureDate;
         }
@@ -64,7 +76,7 @@ const Profile = () => {
     setIsSearchEmpty(filtered.length === 0);
   }, [tasks, categoryFilter, dateFilter, searchQuery]);
 
-  const getUserTasks = async (user) => {
+  const getUserTasks = async (user: User) => {
     if (user) {
       const displayName = user.displayName || "default";
       const tasksRef = collection(db, "tasks", user.uid, displayName);
@@ -73,17 +85,18 @@ const Profile = () => {
         ...doc.data(),
         id: doc.id,
         isChecked: doc.data().isChecked || false,
-      }));
+      })) as Task[];
       setTasks(taskList);
     }
   };
 
 
-  const handleCheckboxChange = async (taskId) => {
+  const handleCheckboxChange = async (taskId: string) => {
     const task = tasks.find((task) => task.id === taskId);
-    const newCheckedState = !task.isChecked;
+    if (!task) return;
 
-    const taskRef = doc(db, "tasks", userDetails.uid, userDetails.displayName || "default", taskId);
+    const newCheckedState = !task.isChecked;
+    const taskRef = doc(db, "tasks", userDetails?.uid ?? "defaultUid", userDetails?.displayName || "default ", taskId);
     await updateDoc(taskRef, {
       isChecked: newCheckedState,
     });
@@ -100,7 +113,11 @@ const Profile = () => {
       await auth.signOut();
       window.location.href = "/";
     } catch (error) {
-      console.log("Error in logging out:", error.message);
+      if (error instanceof Error) {
+        console.log("Error in logging out:", error.message);
+      } else {
+        console.log("An unknown error occurred during logout.");
+      }
     }
   };
 
@@ -110,13 +127,13 @@ const Profile = () => {
     }
   };
 
-  const deleteTask = async (id) => {
+  const deleteTask = async (id: string) => {
     const isConfirmed = window.confirm("Are you sure you want to delete this task?");
     if (isConfirmed) {
       try {
         const user = auth.currentUser;
-        const displayName = user.displayName || "default";
-        const taskDocRef = doc(db, "tasks", user.uid, displayName, id);
+        const displayName = user?.displayName || "default";
+        const taskDocRef = doc(db, "tasks", user!.uid, displayName, id);
         await deleteDoc(taskDocRef);
         setTasks(tasks.filter((task) => task.id !== id));
       } catch (error) {
@@ -127,25 +144,25 @@ const Profile = () => {
 
   const openModal = () => setShowModal(true);
   const closeModal = () => setShowModal(false);
-  const openEditModal = (task) => {
+  const openEditModal = (task: Task) => {
     setTaskToEdit(task);
     setEditModalOpen(true);
   };
   const closeEditModal = () => setEditModalOpen(false);
 
-  const renderTaskRows = (status) => {
+  const renderTaskRows = (status: string): JSX.Element[] => {
     const filteredByStatus = filteredTasks.filter(
       (task) => task.status === status
     );
 
     if (filteredByStatus.length === 0) {
-      return (
+      return [
         <tr>
-          <td colSpan="5" className="text-center text-gray-500 py-4">
+          <td colSpan={5} className="text-center text-gray-500 py-4">
             No Tasks in {status.charAt(0).toUpperCase() + status.slice(1)}
           </td>
         </tr>
-      );
+      ];
     }
 
     return filteredByStatus.map((task) => (
@@ -163,9 +180,11 @@ const Profile = () => {
           </div>
         </td>
         <td className="border px-4 py-2 text-center">
-          {task.dueDate?.seconds
+          {task.dueDate instanceof Timestamp
             ? new Date(task.dueDate.seconds * 1000).toLocaleDateString()
-            : "No Due Date"}
+            : task.dueDate
+              ? new Date(task.dueDate).toLocaleDateString()
+              : "No Due Date"}
         </td>
         <td className="border px-4 py-2 text-center">
           <span
@@ -198,38 +217,38 @@ const Profile = () => {
     ));
   };
 
-  const countTasksByStatus = (status) => {
+  const countTasksByStatus = (status: string) => {
     return tasks.filter((task) => task.status === status).length;
   };
 
-  const handleSortByDate = () => {
+  const handleSortByDate: React.MouseEventHandler<HTMLTableCellElement> = () => {
     const sortedTasks = [...tasks].sort((a, b) => {
-      const dateA = a.dueDate?.seconds || 0;
-      const dateB = b.dueDate?.seconds || 0;
+      const dateA = a.dueDate instanceof Timestamp ? a.dueDate.seconds : new Date(a.dueDate || "").getTime();
+      const dateB = b.dueDate instanceof Timestamp ? b.dueDate.seconds : new Date(b.dueDate || "").getTime();
       return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
     setTasks(sortedTasks);
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
 
-  const handleDateFilter = (days) => {
+  const handleDateFilter = (days: string) => {
     setDateFilter(days);
   };
 
-  const categoryDropdownRef = useRef(null);
-  const dateDropdownRef = useRef(null);
+  const categoryDropdownRef = useRef<HTMLDivElement | null>(null);
+  const dateDropdownRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const handleOutsideClick = (event) => {
+    const handleOutsideClick = (event: MouseEvent) => {
       if (
         categoryDropdownRef.current &&
-        !categoryDropdownRef.current.contains(event.target)
+        !categoryDropdownRef.current.contains(event.target as Node)
       ) {
         setCategoryDropdownOpen(false);
       }
       if (
         dateDropdownRef.current &&
-        !dateDropdownRef.current.contains(event.target)
+        !dateDropdownRef.current.contains(event.target as Node)
       ) {
         setDateDropdownOpen(false);
       }
@@ -244,7 +263,7 @@ const Profile = () => {
 
   return (
     <div>
-      {/* for large screens */}
+      {/* For Large screens */}
       <div className="mr-4 ml-4 hidden lg:block">
         {userDetails ? (
           <>
@@ -273,14 +292,12 @@ const Profile = () => {
 
         {showModal &&
           <NewModal
-            isOpen={showModal}
             onClose={closeModal}
             onTaskAdded={onTaskEditAdded}
           />}
 
         {editModalOpen && taskToEdit && (
           <EditTaskModal
-            isOpen={editModalOpen}
             onClose={closeEditModal}
             taskId={taskToEdit.id}
             initialTaskData={taskToEdit}
@@ -295,7 +312,7 @@ const Profile = () => {
         <div className="flex justify-between items-center p-4 bg-pink-50 mb-4">
           <h1 className="text-xl font-bold">TaskBuddy</h1>
           <img
-            src={userDetails?.photoURL}
+            src={userDetails?.photoURL ?? undefined}
             alt="User"
             className="w-10 h-10 rounded-full"
           />
@@ -451,7 +468,13 @@ const Profile = () => {
                         </div>
 
                         <div className="flex flex-col gap-0">
-                          <p>{task.dueDate.toDate().toLocaleDateString()}</p>
+                          <p>
+                            {task.dueDate ?
+                              (task.dueDate instanceof Timestamp
+                                ? new Date(task.dueDate.seconds * 1000).toLocaleDateString()
+                                : new Date(task.dueDate).toLocaleDateString())
+                              : "No Due Date"}
+                          </p>
                           <div className="flex gap-2">
                             <button
                               className="text-blue-500"
@@ -477,14 +500,12 @@ const Profile = () => {
 
         {showModal && (
           <NewModal
-            isOpen={showModal}
             onClose={closeModal}
             onTaskAdded={onTaskEditAdded}
           />
         )}
         {editModalOpen && taskToEdit && (
           <EditTaskModal
-            isOpen={editModalOpen}
             onClose={closeEditModal}
             taskId={taskToEdit.id}
             initialTaskData={taskToEdit}

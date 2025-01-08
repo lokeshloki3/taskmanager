@@ -6,9 +6,48 @@ import { IoSearchOutline } from "react-icons/io5";
 import notfound from "../assets/notfound.png";
 import { CiViewList } from "react-icons/ci";
 import { CiViewBoard } from "react-icons/ci";
+import { User } from "firebase/auth";
+import { Task } from "../pages/Profile";
 
-const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, handleDateFilter, tasks, filteredTasks, sortOrder, handleSortByDate, renderTaskRows, countTasksByStatus, openEditModal, deleteTask, searchQuery, setSearchQuery, isSearchEmpty }) => {
-    const [view, setView] = useState('list');
+interface UserProfileProps {
+    userDetails: User | null;
+    setCategoryFilter: (category: string) => void;
+    handleLogout: () => void;
+    openModal: () => void;
+    handleDateFilter: (date: string) => void;
+    tasks: Task[];
+    filteredTasks: Task[];
+    sortOrder: "asc" | "desc";
+    handleSortByDate: React.MouseEventHandler<HTMLTableCellElement>;
+    renderTaskRows: (status: string) => JSX.Element[];
+    countTasksByStatus: (status: "todo" | "inprogress" | "completed") => number;
+    openEditModal: (task: Task) => void;
+    deleteTask: (taskId: string) => void;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+    isSearchEmpty: boolean;
+}
+
+
+const UserProfile: React.FC<UserProfileProps> = ({
+    userDetails,
+    setCategoryFilter,
+    handleLogout,
+    openModal,
+    handleDateFilter,
+    tasks,
+    filteredTasks,
+    sortOrder,
+    handleSortByDate,
+    renderTaskRows,
+    countTasksByStatus,
+    openEditModal,
+    deleteTask,
+    searchQuery,
+    setSearchQuery,
+    isSearchEmpty,
+}) => {
+    const [view, setView] = useState<"list" | "board">("list");
 
     return (
         <div>
@@ -52,8 +91,8 @@ const UserProfile = ({ userDetails, setCategoryFilter, handleLogout, openModal, 
                 </div>
                 <div className="flex flex-col gap-2 items-center">
                     <div className="flex justify-center items-center gap-2">
-                        <img src={userDetails.photoURL} className="rounded-full w-16 h-auto" />
-                        <h3>{userDetails.displayName}</h3>
+                        <img src={userDetails?.photoURL ?? undefined} className="rounded-full w-16 h-auto" />
+                        <h3>{userDetails?.displayName}</h3>
                     </div>
                     <div
                         className="flex justify-center items-center text-sm p-2 gap-1 rounded-lg w-24 cursor-pointer border border-red-200"

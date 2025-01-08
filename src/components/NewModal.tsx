@@ -3,22 +3,32 @@ import { addDoc, collection } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig';
 import TaskForm from './TaskForm';
 
-const NewModal = ({ isOpen, onClose, onTaskAdded }) => {
+type NewModalProps = {
+  onClose: () => void;
+  onTaskAdded: () => void;
+};
+
+const NewModal: React.FC<NewModalProps> = ({ onClose, onTaskAdded }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDesc, setTaskDesc] = useState('');
   const [category, setCategory] = useState('work');
   const [dueDate, setDueDate] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState<"todo" | "inprogress" | "completed">("todo");
 
-  const handleTextAreaChange = (e) => {
+  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (e.target.value.length <= 300) {
       setTaskDesc(e.target.value);
     }
   };
 
-  const submitTask = async (e) => {
+  const submitTask = async (e: React.FormEvent) => {
     e.preventDefault();
     const user = auth.currentUser;
+
+    if (!user) {
+      alert('No user is currently logged in.');
+      return;
+    }
 
     if (!taskTitle || !dueDate || !status) {
       alert('Please fill all required fields.');
@@ -62,7 +72,7 @@ const NewModal = ({ isOpen, onClose, onTaskAdded }) => {
             setCategory={setCategory}
             dueDate={dueDate}
             setDueDate={setDueDate}
-            status={status}
+            status={status as "todo" | "inprogress" | "completed"}
             setStatus={setStatus}
             handleTextAreaChange={handleTextAreaChange}
           />

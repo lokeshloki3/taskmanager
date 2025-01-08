@@ -1,10 +1,21 @@
-import React from 'react';
+interface TaskFormProps {
+  taskTitle: string;
+  setTaskTitle: (value: string) => void;
+  taskDesc: string;
+  setTaskDesc: (value: string) => void;
+  category: string;
+  setCategory: (value: string) => void;
+  dueDate: string;
+  setDueDate: (value: string) => void;
+  status: "todo" | "inprogress" | "completed";
+  setStatus: (value: "todo" | "inprogress" | "completed") => void;
+  handleTextAreaChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+}
 
-const TaskForm = ({
+const TaskForm: React.FC<TaskFormProps> = ({
   taskTitle,
   setTaskTitle,
   taskDesc,
-  setTaskDesc,
   category,
   setCategory,
   dueDate,
@@ -68,7 +79,7 @@ const TaskForm = ({
         <p className="mb-2">Task Status*</p>
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          onChange={(e) => setStatus(e.target.value as "todo" | "inprogress" | "completed")}
           required
           className="border border-gray-300 bg-gray-100 p-1 pr-5 pl-5 text-sm rounded-xl cursor-pointer"
         >

@@ -17,10 +17,10 @@ const Home = () => {
     }
 
     return (
-        <div className="flex justify-around" style={{backgroundColor: "#FFF9F9"}}>
+        <div className="flex justify-around" style={{ backgroundColor: "#FFF9F9" }}>
             <div className="flex flex-col justify-center items-start h-screen gap-4">
                 <div className="flex gap-4 font-bold ml-20 md:ml-0">
-                    <BiTask style={{ color: '#C191C2' }} className="text-2xl md:text-4xl mt-2 md:mt-0"/>
+                    <BiTask style={{ color: '#C191C2' }} className="text-2xl md:text-4xl mt-2 md:mt-0" />
                     <p style={{ color: '#C191C2' }} className="text-2xl md:text-4xl">TaskBuddy</p>
                 </div>
                 <p className="text-center md:text-start text-sm">Streamline your workflow and track progress effortlessly <br />with out all-in-one task management app.</p>
@@ -28,7 +28,7 @@ const Home = () => {
                     <button className="text-white flex gap-2 items-center" onClick={handleClick}> <FcGoogle /> Continue with Google</button>
                 </div>
             </div>
-            <img src={mainimg} alt="main image" className=" max-w-[600px] w-full h-auto hidden md:block"/>
+            <img src={mainimg} alt="main image" className=" max-w-[600px] w-full h-auto hidden md:block" />
         </div>
     )
 }

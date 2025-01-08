@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { updateDoc, doc } from 'firebase/firestore';
+import { updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig';
 import TaskForm from './TaskForm';
+import { Task } from '../pages/Profile';
 
-const EditTaskModal = ({ isOpen, onClose, taskId, initialTaskData, onEdit }) => {
+interface EditTaskModalProps {
+  onClose: () => void;
+  taskId: string;
+  initialTaskData: Task;
+  onEdit: () => void;
+}
+
+const EditTaskModal: React.FC<EditTaskModalProps> = ({ onClose, taskId, initialTaskData, onEdit }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDesc, setTaskDesc] = useState('');
   const [category, setCategory] = useState('work');
   const [dueDate, setDueDate] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState<"todo" | "inprogress" | "completed">("todo");
 
   useEffect(() => {
     if (initialTaskData) {
@@ -17,8 +25,9 @@ const EditTaskModal = ({ isOpen, onClose, taskId, initialTaskData, onEdit }) => 
       setCategory(initialTaskData.category || 'work');
       if (initialTaskData.dueDate) {
         const parsedDate =
-          initialTaskData.dueDate.toDate?.() ||
-          new Date(initialTaskData.dueDate);
+          initialTaskData.dueDate instanceof Timestamp
+            ? initialTaskData.dueDate.toDate()
+            : new Date(initialTaskData.dueDate);
         setDueDate(parsedDate.toISOString().substr(0, 10));
       } else {
         setDueDate('');
@@ -27,13 +36,13 @@ const EditTaskModal = ({ isOpen, onClose, taskId, initialTaskData, onEdit }) => 
     }
   }, [initialTaskData]);
 
-  const handleTextAreaChange = (e) => {
+  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (e.target.value.length <= 300) {
       setTaskDesc(e.target.value);
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const user = auth.currentUser;
@@ -71,7 +80,7 @@ const EditTaskModal = ({ isOpen, onClose, taskId, initialTaskData, onEdit }) => 
             setCategory={setCategory}
             dueDate={dueDate}
             setDueDate={setDueDate}
-            status={status}
+            status={status as "todo" | "inprogress" | "completed"}
             setStatus={setStatus}
             handleTextAreaChange={handleTextAreaChange}
           />

@@ -1,5 +1,16 @@
-const TaskBoard = ({ tasks, filteredTasks, countTasksByStatus, openEditModal, deleteTask }) => {
-  const taskStatuses = ['todo', 'inprogress', 'completed'];
+import { Timestamp } from "firebase/firestore";
+import { Task } from "../pages/Profile"
+
+interface TaskBoardProps {
+  tasks: Task[];
+  filteredTasks: Task[];
+  countTasksByStatus: (status: "todo" | "inprogress" | "completed") => number;
+  openEditModal: (task: Task) => void;
+  deleteTask: (taskId: string) => void;
+}
+
+const TaskBoard: React.FC<TaskBoardProps> = ({ filteredTasks, countTasksByStatus, openEditModal, deleteTask }) => {
+  const taskStatuses: ("todo" | "inprogress" | "completed")[] = ['todo', 'inprogress', 'completed'];
 
   return (
     <div className="flex gap-8">
@@ -17,7 +28,15 @@ const TaskBoard = ({ tasks, filteredTasks, countTasksByStatus, openEditModal, de
                   <p>Category: {task.category}</p>
                 </div>
                 <div className="mt-2 flex justify-between">
-                  <p>Due on: {task.dueDate.toDate().toLocaleDateString()}</p>
+                  <p>
+                    Due on: {
+                      task.dueDate instanceof Timestamp
+                        ? task.dueDate.toDate().toLocaleDateString()
+                        : task.dueDate
+                          ? new Date(task.dueDate).toLocaleDateString()
+                          : "No due date"
+                    }
+                  </p>
                   <div className="flex justify-start gap-4">
                     <button
                       className="text-blue-500"
