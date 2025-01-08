@@ -71,7 +71,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
           required
-          className="border border-gray-300 p-1 pr-5 pl-5 text-sm rounded-xl bg-gray-100"
+          className="border border-gray-300 p-1 pr-3 pl-3 text-sm rounded-xl bg-gray-100"
           min={new Date().toISOString().split("T")[0]}
         />
       </div>
