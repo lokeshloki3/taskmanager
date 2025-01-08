@@ -28,7 +28,6 @@ interface UserProfileProps {
     isSearchEmpty: boolean;
 }
 
-
 const UserProfile: React.FC<UserProfileProps> = ({
     userDetails,
     setCategoryFilter,
@@ -91,13 +90,12 @@ const UserProfile: React.FC<UserProfileProps> = ({
                 </div>
                 <div className="flex flex-col gap-2 items-center">
                     <div className="flex justify-center items-center gap-2">
-                        <img src={userDetails?.photoURL ?? undefined} className="rounded-full w-16 h-auto" />
+                        <img src={userDetails?.photoURL || ''} className="rounded-full w-16 h-auto" />
                         <h3>{userDetails?.displayName}</h3>
                     </div>
                     <div
-                        className="flex justify-center items-center text-sm p-2 gap-1 rounded-lg w-24 cursor-pointer border border-red-200"
+                        className="flex justify-center items-center bg-[#F8F3F3] text-sm p-2 gap-1 rounded-lg w-24 cursor-pointer border border-red-200"
                         onClick={handleLogout}
-                        style={{ backgroundColor: "#F8F3F3" }}
                     >
                         <BiLogOut />
                         <p>Logout</p>

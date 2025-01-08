@@ -7,7 +7,8 @@ import UserProfile from "../components/UserProfile";
 import { IoSearchOutline } from "react-icons/io5";
 import { User } from "firebase/auth";
 import { BiLogOut } from "react-icons/bi";
-
+import ConfirmationModal from "../components/ConfirmationModal";
+import { useNavigate } from "react-router-dom";
 
 export interface Task {
   id: string;
@@ -33,6 +34,9 @@ const Profile = () => {
   const [isSearchEmpty, setIsSearchEmpty] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [taskIdToDelete, setTaskIdToDelete] = useState<string | null>(null);
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -112,7 +116,7 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      window.location.href = "/";
+      navigate("/");
     } catch (error) {
       if (error instanceof Error) {
         console.log("Error in logging out:", error.message);
@@ -128,15 +132,25 @@ const Profile = () => {
     }
   };
 
+  const openDeleteModal = (id: string) => {
+    setTaskIdToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setTaskIdToDelete(null);
+  };
+
   const deleteTask = async (id: string) => {
-    const isConfirmed = window.confirm("Are you sure you want to delete this task?");
-    if (isConfirmed) {
+    if (taskIdToDelete) {
       try {
         const user = auth.currentUser;
         const displayName = user?.displayName || "default";
         const taskDocRef = doc(db, "tasks", user!.uid, displayName, id);
         await deleteDoc(taskDocRef);
         setTasks(tasks.filter((task) => task.id !== id));
+        closeDeleteModal();
       } catch (error) {
         console.log(error);
       }
@@ -145,6 +159,7 @@ const Profile = () => {
 
   const openModal = () => setShowModal(true);
   const closeModal = () => setShowModal(false);
+
   const openEditModal = (task: Task) => {
     setTaskToEdit(task);
     setEditModalOpen(true);
@@ -208,13 +223,22 @@ const Profile = () => {
             Edit
           </button>
           <button
-            onClick={() => deleteTask(task.id)}
+            onClick={() => openDeleteModal(task.id)}
             className="bg-red-500 text-white px-4 py-1 rounded-lg"
           >
             Delete
           </button>
+          {isDeleteModalOpen && (
+            <ConfirmationModal
+              isOpen={isDeleteModalOpen}
+              message="Are you sure you want to delete this task?"
+              onConfirm={() => deleteTask(taskIdToDelete!)}
+              onCancel={closeDeleteModal}
+            />
+          )}
         </td>
       </tr>
+
     ));
   };
 
@@ -493,7 +517,7 @@ const Profile = () => {
                             </button>
                             <button
                               className="text-red-500"
-                              onClick={() => deleteTask(task.id)}
+                              onClick={() => openDeleteModal(task.id)}
                             >
                               Delete
                             </button>
@@ -501,6 +525,14 @@ const Profile = () => {
                         </div>
                       </div>
                     ))}
+                  {isDeleteModalOpen && (
+                    <ConfirmationModal
+                      isOpen={isDeleteModalOpen}
+                      message="Are you sure you want to delete this task?"
+                      onConfirm={() => deleteTask(taskIdToDelete!)}
+                      onCancel={closeDeleteModal}
+                    />
+                  )}
                 </div>
               </div>
             );
