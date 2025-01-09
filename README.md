@@ -9,6 +9,7 @@ Features -
 6. Mobile responsive
 7. Popup Modal for Edit and Add tasks
 8. Sort the task according to Dates column in ascending or descending order
+9. Checkbox's ticked history retained even after logout or refresh.
 
 Steps to run them locally -
 1. git clone the repo
