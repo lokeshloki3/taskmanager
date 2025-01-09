@@ -96,7 +96,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                         </select>
                     </div>
                 </div>
-                <div className="flex flex-col gap-2 items-center">
+                <div className="flex flex-col gap-2 items-end">
                     <div className="flex justify-center items-center gap-2">
                         <img src={userDetails?.photoURL || ''} className="rounded-full w-16 h-auto" />
                         <h3>{userDetails?.displayName}</h3>
